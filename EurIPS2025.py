@@ -878,27 +878,27 @@ for model, dataset in zip(all_models, all_datasets):
         mask = inputs['observation_mask'].cpu().numpy()
 
         # Create back conversion mapping from index to label
-        # 注意：索引0是padding，我们需要处理这个特殊情况
+        # Note: Index 0 is padding, we need to handle this special case
         back_conversion = {}
         for k, v in dataset.label_to_idx.items():
             back_conversion[v] = k
-        # 添加padding索引的处理
-        back_conversion[0] = "PADDING"  # 或者可以跳过padding
+        # Handle padding index
+        back_conversion[0] = "PADDING"  # Or we can skip padding
 
         for patient_index, patient_weight in enumerate(attention_weights):
             for i, weight in enumerate(patient_weight):
-                # 检查这个位置是否被masked（即是否是有效数据）
+                # Check if this position is masked (i.e., whether it's valid data)
                 if mask[patient_index][i] == 0:
-                    continue  # 跳过padding/masked位置
+                    continue  # Skip padding/masked positions
                     
                 feature_value = interpretation_data['input']['type'][patient_index][i]
                 feature_idx = feature_value.item()
                 
-                # 跳过padding索引
+                # Skip padding index
                 if feature_idx == 0:
                     continue
                 
-                # 获取特征类型名称
+                # Get feature type name
                 if feature_idx in back_conversion:
                     feature_type = back_conversion[feature_idx]
                     feature_weight_total[feature_type] = feature_weight_total.get(feature_type, 0) + weight.item()
